@@ -1,9 +1,9 @@
 import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { title } from 'process';
 const {getMetadata} = require('page-metadata-parser');
 const domino = require('domino');
-const request = require('request')
+const request = require('request-promise-native');
 
-// Remember to rename these classes and interfaces!
 
 interface OpenGraphPluginSettings {
 	mySetting: string;
@@ -13,26 +13,39 @@ const DEFAULT_SETTINGS: OpenGraphPluginSettings = {
 	mySetting: 'default'
 }
 
+
+class UrlDetails {
+	title: string;
+	description: string;
+}
+
 export default class OpenGraphPlugin extends Plugin {
 	settings: OpenGraphPluginSettings;
 
 	async onload() {
 		await this.loadSettings();
 
+
+		this.addCommand({      
+			id: "convert-link-to-open-graph",
+			name: "Convert to Open Graph Link",
+			editorCallback: async (editor: Editor) => {
+				const url = editor.getSelection();
+				const urlDetails = await this.fetchUrlDetails(url);
+
+				const newUrl = `[${urlDetails.title}](${url})`;
+				editor.replaceSelection(newUrl);
+			},
+		});
+
+
+
+
 		// This creates an icon in the left ribbon.
 		const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', async (evt: MouseEvent) => {
-			// Called when the user clicks the icon.
-			const url = 'https://www.goodreads.com/book/show/60044524-every-family-has-a-story'
-
-			request(url, (error: any, response: any, body: string) => {
-				const html = body;
-				const doc = domino.createWindow(html).document;
-				const metadata = getMetadata(doc, url);
-				
-				new Notice(metadata.title);	
-			});
-
+			new Notice("Hello, World!");	
 		});
+
 		// Perform additional things with the ribbon
 		ribbonIconEl.addClass('my-plugin-ribbon-class');
 
@@ -100,6 +113,26 @@ export default class OpenGraphPlugin extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
+	}
+
+	async fetchUrlDetails(url: string): Promise<UrlDetails> {
+
+		const details = new UrlDetails();
+
+    try {
+			const html = await request(url);
+			const doc = domino.createWindow(html).document;
+			const metadata = getMetadata(doc, url);
+
+			
+			details.title = metadata.title;
+			details.description = metadata.description;
+			return details;
+
+		} catch (err) {
+				console.error(err);
+				return details;
+		}
 	}
 }
 
