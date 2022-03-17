@@ -5,16 +5,16 @@ const request = require('request')
 
 // Remember to rename these classes and interfaces!
 
-interface MyPluginSettings {
+interface OpenGraphPluginSettings {
 	mySetting: string;
 }
 
-const DEFAULT_SETTINGS: MyPluginSettings = {
+const DEFAULT_SETTINGS: OpenGraphPluginSettings = {
 	mySetting: 'default'
 }
 
-export default class MyPlugin extends Plugin {
-	settings: MyPluginSettings;
+export default class OpenGraphPlugin extends Plugin {
+	settings: OpenGraphPluginSettings;
 
 	async onload() {
 		await this.loadSettings();
@@ -120,9 +120,9 @@ class SampleModal extends Modal {
 }
 
 class SampleSettingTab extends PluginSettingTab {
-	plugin: MyPlugin;
+	plugin: OpenGraphPlugin;
 
-	constructor(app: App, plugin: MyPlugin) {
+	constructor(app: App, plugin: OpenGraphPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
