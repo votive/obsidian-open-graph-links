@@ -1,4 +1,7 @@
 import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+const {getMetadata} = require('page-metadata-parser');
+const domino = require('domino');
+const request = require('request')
 
 // Remember to rename these classes and interfaces!
 
@@ -17,9 +20,18 @@ export default class MyPlugin extends Plugin {
 		await this.loadSettings();
 
 		// This creates an icon in the left ribbon.
-		const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
+		const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', async (evt: MouseEvent) => {
 			// Called when the user clicks the icon.
-			new Notice('This is a notice!');
+			const url = 'https://www.goodreads.com/book/show/60044524-every-family-has-a-story'
+
+			request(url, (error: any, response: any, body: string) => {
+				const html = body;
+				const doc = domino.createWindow(html).document;
+				const metadata = getMetadata(doc, url);
+				
+				new Notice(metadata.title);	
+			});
+
 		});
 		// Perform additional things with the ribbon
 		ribbonIconEl.addClass('my-plugin-ribbon-class');
